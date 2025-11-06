@@ -1,0 +1,36 @@
+# Configuration for generating the self-signed CA root certificate itself
+
+openssl_conf		= openssl_conf
+
+[ openssl_conf ]
+providers		= providers
+
+[ providers ]
+pkcs11			= pkcs11
+
+[ pkcs11 ]
+activate		= 1
+
+[ ca ]
+default_ca		= ca_selfsign
+
+[ ca_selfsign ]
+database		= ipxe-sb-ca.db
+default_days		= 10000
+default_md		= sha256
+new_certs_dir		= signed
+policy			= ca_policy
+private_key		= pkcs11:id=%02   # 02 translates to Yubikey slot 9c
+rand_serial		= yes
+unique_subject		= no
+x509_extensions		= ca_exts
+
+[ ca_policy ]
+commonName		= supplied
+
+[ ca_exts ]
+authorityInfoAccess	= caIssuers;URI:https://ipxe.org/secure-boot-ca
+authorityKeyIdentifier	= keyid:always
+basicConstraints	= critical,CA:true
+extendedKeyUsage	= codeSigning
+keyUsage		= critical,digitalSignature,keyCertSign,cRLSign
