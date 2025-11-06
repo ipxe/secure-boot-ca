@@ -379,6 +379,21 @@ The certificate's SHA-256 fingerprint may be obtained using:
 sha256 Fingerprint=D0:69:34:AB:DF:6A:7D:CF:E1:2C:F2:02:BC:0E:61:AC:BE:88:FF:F7:6E:78:9B:F8:52:38:8B:92:BC:39:79:FC
 ```
 
+## Issuing
+
+Code signing certificates may be issued using command sequences such
+as:
+
+	ykman piv keys generate --algorithm RSA2048 9d ipxe-sb-cs-g1a.pub
+
+	ykman piv certificates request -s "iPXE Secure Boot Code Signing G1A" 9d \
+		ipxe-sb-cs-g1a.pub ipxe-sb-cs-g1a.req
+
+	openssl ca -config codesign.cnf \
+		-in ipxe-sb-cs-g1a.req -out ipxe-sb-cs-g1a.crt -batch -notext
+
+	ykman piv certificates import 9d ipxe-sb-cs-g1a.crt
+
 [ipxeshim]: https://github.com/ipxe/shim
 [yubikey]: https://www.yubico.com/store/yubikey-5-fips-series
 [attestation]: https://developers.yubico.com/PIV/Introduction/PIV_attestation.html
