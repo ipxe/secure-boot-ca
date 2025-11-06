@@ -260,6 +260,125 @@ Extended Validation Code Signing, and is owned and controlled by [Fen
 Systems Ltd.][fensystems] as the entity named in the Extended
 Validation Code Signing certificate.
 
+## Self-signing
+
+A quirk of using the OpenSC PKCS#11 libraries with the Yubikey is that
+private keys do not become visible and usable for signing until a
+corresponding certificate exists in the slot.  A temporary self-signed
+certificate was therefore created using:
+
+	ykman piv certificates generate \
+		-s "Temporary self-signed certificate" 9c ipxe-sb-ca.pub
+
+This temporary self-signed certificate is never used: it exists only
+to allow OpenSSL to perform signing of the real self-signed CA
+certificate.
+
+The CA certificate request was created using:
+
+	ykman piv certificates request \
+		-s "iPXE Secure Boot CA" 9c ipxe-sb-ca.pub ipxe-sb-ca.req
+
+The final [CA certificate](ipxe-sb-ca.crt) was signed as per the
+[configuration file](selfsign.cnf) using:
+
+	openssl ca -config selfsign.cnf -selfsign \
+		-in ipxe-sb-ca.req -out ipxe-sb-ca.crt -batch -notext
+
+The resulting [CA certificate](ipxe-sb-ca.crt) may be displayed using:
+
+	openssl x509 -in ipxe-sb-ca.crt -noout -text
+
+```
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            5d:98:da:a0:5d:69:64:0c:74:3c:eb:a8:c4:87:31:ec:77:20:73:37
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN=iPXE Secure Boot CA
+        Validity
+            Not Before: Nov  6 16:04:16 2025 GMT
+            Not After : Mar 24 16:04:16 2053 GMT
+        Subject: CN=iPXE Secure Boot CA
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:ab:a8:a1:d2:73:ad:c2:1b:d8:01:b2:2f:67:6d:
+                    97:26:6f:de:e7:af:e6:56:c5:4b:b0:74:1b:39:ef:
+                    ca:33:0c:c9:b5:0b:9a:f4:38:cf:31:0d:a0:7d:97:
+                    6c:86:ff:e2:2f:0c:7c:a6:8c:fe:52:8b:5a:25:d6:
+                    2c:6b:59:2e:a5:b1:8d:e2:b7:05:c0:8f:1c:f5:1c:
+                    b0:69:15:8f:d8:23:65:4a:47:57:59:ed:b7:da:c7:
+                    22:d4:0f:65:2d:22:06:b0:07:14:8d:50:ae:69:87:
+                    b6:1c:88:81:ad:dc:4f:84:d4:2b:d4:7d:d9:d7:71:
+                    3f:fd:4d:cc:03:17:02:b1:e2:7a:55:f0:70:15:54:
+                    46:31:96:80:39:45:b8:21:e6:5d:07:40:b2:76:41:
+                    4a:17:06:8a:d0:80:8d:2a:92:8a:99:43:20:51:de:
+                    23:0d:af:60:37:35:45:c8:f8:4f:31:07:06:a5:c3:
+                    dd:ca:f7:28:32:20:16:e7:92:bb:95:1c:9a:34:ed:
+                    a8:26:9b:98:72:cd:45:55:11:95:eb:36:0e:73:a7:
+                    c3:d2:4e:4b:ef:ae:42:d1:5e:7c:8e:28:b8:e6:97:
+                    f3:48:4d:cd:fd:cc:99:e9:6e:d0:e5:47:4c:ee:8c:
+                    d2:53:f9:4c:fd:94:c2:47:70:74:36:06:ff:cc:f7:
+                    d0:75
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            Authority Information Access:
+                CA Issuers - URI:https://ipxe.org/secure-boot-ca
+            X509v3 Authority Key Identifier:
+                DC:7C:9C:1E:AF:7E:03:CA:B1:1C:60:5A:6D:18:27:22:60:90:97:A6
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+            X509v3 Extended Key Usage:
+                Code Signing
+            X509v3 Key Usage: critical
+                Digital Signature, Certificate Sign, CRL Sign
+            X509v3 Subject Key Identifier:
+                DC:7C:9C:1E:AF:7E:03:CA:B1:1C:60:5A:6D:18:27:22:60:90:97:A6
+    Signature Algorithm: sha256WithRSAEncryption
+    Signature Value:
+        78:21:3f:13:f9:08:61:29:1a:3a:97:b2:35:d8:20:2b:00:4b:
+        9f:cd:f1:e6:23:2a:d8:e8:8c:d5:e6:f1:38:fd:e2:5f:a3:e5:
+        9b:d5:1b:e4:3f:16:f6:c7:dc:4e:85:4c:2f:9b:15:65:2a:3e:
+        10:84:0f:31:36:24:d0:2c:94:62:55:f9:21:f6:51:ec:a3:a8:
+        dc:c4:71:b0:a5:5d:78:8f:b4:9c:bf:2c:38:27:1f:25:91:92:
+        01:17:c2:f3:e4:13:8c:a6:c9:12:79:15:91:d9:c3:e5:1a:d8:
+        b5:3d:c0:91:65:07:ee:d6:2c:04:64:2d:09:da:ac:a6:da:1b:
+        78:12:1a:55:5d:01:2c:b2:15:c8:42:47:e4:96:b3:06:bf:5d:
+        5c:89:09:ef:1f:e0:a9:6c:9f:31:ec:be:61:f5:90:2c:d4:1f:
+        f0:9c:be:4f:dd:6b:1a:bb:a1:e2:6d:ac:35:ce:90:db:29:09:
+        63:c9:78:83:dc:40:92:a4:f2:28:21:6f:ea:bc:97:be:0e:80:
+        81:77:a0:38:f9:16:00:f5:e6:25:6e:00:4c:cb:8b:11:24:db:
+        6d:b6:7a:cc:d7:cf:3d:a7:e8:10:b6:ff:be:68:8f:16:b2:ff:
+        aa:b2:73:09:13:25:19:31:46:78:60:90:b9:9f:ee:01:27:80:
+        cf:de:95:ec
+```
+
+The certificate's public key matches the key pair originally
+[generated above](#key-pair).
+
+## Finalisation
+
+A [DER version](ipxe-sb-ca.der) of the CA certificate (as required for
+embedding into shim) was created using:
+
+	openssl x509 -in ipxe-sb-ca.crt -out ipxe-sb-ca.der -outform DER
+
+The certificate was imported into the HSM (overwriting the temporary
+self-signed certificate) using:
+
+	ykman piv certificates import 9c ipxe-sb-ca.crt
+
+The certificate's SHA-256 fingerprint may be obtained using:
+
+	openssl x509 -in ipxe-sb-ca.crt -noout -sha256 -fingerprint
+
+```
+sha256 Fingerprint=D0:69:34:AB:DF:6A:7D:CF:E1:2C:F2:02:BC:0E:61:AC:BE:88:FF:F7:6E:78:9B:F8:52:38:8B:92:BC:39:79:FC
+```
+
 [ipxeshim]: https://github.com/ipxe/shim
 [yubikey]: https://www.yubico.com/store/yubikey-5-fips-series
 [attestation]: https://developers.yubico.com/PIV/Introduction/PIV_attestation.html
