@@ -394,6 +394,19 @@ as:
 
 	ykman piv certificates import 9d ipxe-sb-cs-g1a.crt
 
+## Signing
+
+An iPXE binary may be signed using a command such as:
+
+	osslsigncode sign -pkcs11module /usr/lib64/opensc-pkcs11.so \
+		-certs ipxe-sb-cs-g1a.crt -key 'pkcs11:id=%03' \
+		-ts http://timestamp.digicert.com \
+		-in snponly.efi -out snponly-signed.efi
+
+and verified using a command such as:
+
+	osslsigncode verify -CAfile ipxe-sb-ca.crt snponly-signed.efi
+
 [ipxeshim]: https://github.com/ipxe/shim
 [yubikey]: https://www.yubico.com/store/yubikey-5-fips-series
 [attestation]: https://developers.yubico.com/PIV/Introduction/PIV_attestation.html
