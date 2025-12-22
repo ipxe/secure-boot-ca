@@ -1,4 +1,4 @@
-# Configuration for issuing code signing certificates
+# Configuration for issuing intermediate CA certificates
 
 openssl_conf		= openssl_conf
 
@@ -12,18 +12,18 @@ pkcs11			= pkcs11
 activate		= 1
 
 [ ca ]
-default_ca		= ca_codesign
+default_ca		= ca_intermediate
 
-[ ca_codesign ]
-certificate		= pkcs11:id=%02   # 02 translates to Yubikey slot 9c
+[ ca_intermediate ]
+certificate		= ipxe-sb-ca.crt
 database		= ipxe-sb-ca.db
-default_days		= 365
+default_days		= 5000
 default_md		= sha256
 new_certs_dir		= signed
 policy			= ca_policy
 private_key		= pkcs11:id=%02   # 02 translates to Yubikey slot 9c
 rand_serial		= yes
-unique_subject		= yes
+unique_subject		= no
 x509_extensions		= ca_exts
 
 [ ca_policy ]
@@ -32,5 +32,6 @@ commonName		= supplied
 [ ca_exts ]
 authorityInfoAccess	= caIssuers;URI:https://ipxe.org/secure-boot-ca
 authorityKeyIdentifier	= keyid:always
+basicConstraints	= critical,CA:true
 extendedKeyUsage	= codeSigning
-keyUsage		= critical,digitalSignature
+keyUsage		= critical,digitalSignature,keyCertSign,cRLSign

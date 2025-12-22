@@ -379,6 +379,26 @@ The certificate's SHA-256 fingerprint may be obtained using:
 sha256 Fingerprint=D0:69:34:AB:DF:6A:7D:CF:E1:2C:F2:02:BC:0E:61:AC:BE:88:FF:F7:6E:78:9B:F8:52:38:8B:92:BC:39:79:FC
 ```
 
+## Intermediate CAs
+
+An intermediate CA certificate may be issued (on a **different**
+Yubikey HSM) using command sequences such as:
+
+	# Generate key and certificate request (using the intermediate CA's HSM)
+	#
+	ykman piv keys generate --algorithm RSA2048 9c ipxe-sb-int-g1a.pub
+	ykman piv certificates request -s "iPXE Secure Boot Intermediate G1A" 9c \
+		ipxe-sb-int-g1a.pub ipxe-sb-int-g1a.req
+
+	# Sign certificate request (using the root CA's HSM)
+	#
+	openssl ca -config intermediate.cnf \
+		-in ipxe-sb-int-g1a.req -out ipxe-sb-int-g1a.crt -batch -notext
+
+	# Import intermediate CA certificate (using the intermediate CA's HSM)
+	#
+	ykman piv certificates import 9c ipxe-sb-int-g1a.crt
+
 ## Issuing
 
 Code signing certificates may be issued using command sequences such
@@ -399,7 +419,8 @@ as:
 An iPXE binary may be signed using a command such as:
 
 	osslsigncode sign -pkcs11module /usr/lib64/opensc-pkcs11.so \
-		-certs ipxe-sb-cs-g1a.crt -key 'pkcs11:id=%03' \
+		-pkcs11cert 'pkcs11:id=%03' -key 'pkcs11:id=%03' \
+		-certs ipxe-sb-int-g1a.crt \
 		-ts http://timestamp.digicert.com \
 		-in snponly.efi -out snponly-signed.efi
 
